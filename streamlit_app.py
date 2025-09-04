@@ -7,6 +7,9 @@ st.write(
     "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
 )
 
+if "conn_tenant" not in st.session_state:
+    st.session_state.conn_tenant = "EMPTY"
+
 # Add a selectbox to the sidebar:
 conn_region = st.sidebar.selectbox(
     'Region',
@@ -14,7 +17,7 @@ conn_region = st.sidebar.selectbox(
 )
 
 # Add a text input to the sidebar:
-conn_tenant = st.sidebar.text_input("Tenant", key="tenant")
+st.session_state.conn_tenant = st.sidebar.text_input("Tenant", key="tenant")
 
 # Add a text input to the sidebar:
 conn_api_key = st.sidebar.text_input("x-api-key", key="api_key")
@@ -26,5 +29,5 @@ add_slider = st.sidebar.slider(
 )
 
 'Region selected: ', conn_region
-'Tenant selected: #', conn_tenant, '#'
+'Tenant selected: #', st.session_state.conn_tenant, '#'
 'x-api-key selected: #', conn_api_key, '#'
