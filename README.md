@@ -1,6 +1,6 @@
 # 🎈 BlueDolphin Publisher
 
-A simple Streamlit app template for you to modify!
+A simple Streamlit app showing information contained in the BlueDolphin repository.
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
 
