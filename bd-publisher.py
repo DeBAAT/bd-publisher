@@ -22,7 +22,7 @@ conn_api_key = st.sidebar.text_input("x-api-key", key="api_key")
 # Add a slider to the sidebar:
 add_slider = st.sidebar.slider(
     'Select a range of values',
-    0.0, 100.0, (25.0, 75.0)
+    0.0, 100.0, (25.0, 70.0)
 )
 
 'Region selected: ', conn_region
