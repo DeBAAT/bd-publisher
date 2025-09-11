@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 from collections import Counter
 
+swagger_url = "https://public-api.eu.bluedolphin.app/swagger/v1/swagger.json"
+
 st.title("🎈 BlueDolphin Publisher")
 st.markdown("Welcome to the BlueDolphin Publisher app. Use the sidebar to configure your API connection and filter data.")
 
@@ -34,6 +36,16 @@ def fetch_data(region, tenant, api_key, workspace_id, take):
     except requests.exceptions.RequestException as e:
         st.error(f"API request failed: {e}")
         return None
+
+# Function to fetch endpoints from API swagger_url
+def get_api_endpoints(swagger_url):
+    response = requests.get(swagger_url)
+    response.raise_for_status()
+    swagger_data = response.json()
+
+    paths = swagger_data.get("paths", {})
+    endpoint_list = list(paths.keys())
+    return sorted(endpoint_list)
 
 # Fetch and display data
 if st.button("Fetch Data"):
@@ -91,3 +103,13 @@ if st.button("Fetch Data"):
 'x-api-key selected: #', conn_api_key, '#'
 'Workspace_id selected: #', conn_workspace_id, '#'
 'Take selected: #', conn_take, '#'
+'Swagger_url used: #', swagger_url, '#'
+
+# Add Dropdown to select an endpoint from the list found
+try:
+    endpoints = get_api_endpoints(swagger_url)
+    selected_endpoint = st.selectbox("Select an API Endpoint", endpoints)
+    st.write(f"You selected: `{selected_endpoint}`")
+except Exception as e:
+    st.error(f"Failed to load endpoints: {e}")
+
