@@ -4,6 +4,24 @@ import requests
 
 st.title("🔍 Swagger GET Endpoint Explorer")
 
+# Collect Authentication Inputs Once in the sidebar
+st.sidebar.header("🔐 Authentication")
+api_key = st.sidebar.text_input("API Key", type="password")
+tenant = st.sidebar.text_input("Tenant")
+
+# Initialize Session State for params
+if "params" not in st.session_state:
+    st.session_state.params = {}
+
+# Store Headers in a Reusable Dictionary
+def get_auth_headers(api_key, tenant):
+    return {
+        "x-api-key": api_key,
+        "tenant": tenant,
+        "Content-Type": "application/json"
+    }
+
+
 # Step 1: Upload Swagger JSON file
 uploaded_file = st.file_uploader("Upload Swagger JSON", type="json")
 
@@ -43,11 +61,14 @@ if uploaded_file is not None:
 
         label = f"{name} ({location})"
         if param_type == "string":
-            user_inputs[name] = st.text_input(label, value="", help=f"Required: {required}")
+            user_inputs[name] = st.text_input(label, value=st.session_state.params.get(name, ""))
         elif param_type == "integer":
-            user_inputs[name] = st.number_input(label, value=0, help=f"Required: {required}")
+            user_inputs[name] = st.number_input(label, value=st.session_state.params.get(name, 0))
         elif param_type == "boolean":
-            user_inputs[name] = st.checkbox(label)
+            user_inputs[name] = st.checkbox(label, value=st.session_state.params.get(name, False))
+
+    # Save inputs to session state
+    st.session_state.params.update(user_inputs)
 
     # Step 6: Call the endpoint when button is pressed
     if st.button("Call Endpoint"):
@@ -73,19 +94,24 @@ if uploaded_file is not None:
                     query_params[name] = value
 
         # Build headers
-        headers = {}
-        for param in parameters:
-            if param.get("in") == "header":
-                name = param.get("name")
-                value = user_inputs.get(name)
-                if value != "":
-                    headers[name] = value
+        # headers = {}
+        # for param in parameters:
+            # if param.get("in") == "header":
+                # name = param.get("name")
+                # value = user_inputs.get(name)
+                # if value != "":
+                    # headers[name] = value
 
         try:
+            # Use Headers in Every API Call
+            headers = get_auth_headers(api_key, tenant)
             response = requests.get(url, headers=headers, params=query_params)
             response.raise_for_status()
             st.subheader("Response")
             st.json(response.json())
         except Exception as e:
             st.error(f"API call failed: {e}")
+
+'Tenant selected: #', tenant, '#'
+# 'Workspace_id selected: #', workspace_id, '#'
 
