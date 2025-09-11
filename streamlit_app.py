@@ -17,6 +17,7 @@ conn_tenant = st.sidebar.text_input("Tenant", key="tenant")
 conn_api_key = st.sidebar.text_input("x-api-key", key="api_key")
 conn_workspace_id = st.sidebar.text_input("workspace_id", key="workspace_id")
 conn_take = st.sidebar.number_input("take", key="take", format="%d", min_value=1, max_value=10000, value=5, step=1)
+conn_show = st.sidebar.number_input("show", key="show", format="%d", min_value=1, max_value=10000, value=5, step=1)
 
 # Add a slider to the sidebar:
 range_values = st.sidebar.slider( 'Select a range of values:', 0.0, 100.0, (25.0, 70.0) )
@@ -58,7 +59,7 @@ if st.button("Fetch Data"):
         df = pd.DataFrame(data)
 
         st.subheader("All Items Table")
-        st.dataframe(df)  # Interactive table with sorting and filtering
+        st.dataframe(df.head(conn_show))  # Interactive table with sorting and filtering
 
         # Filter based on slider
         # if "type.name" in df.columns:
@@ -79,7 +80,7 @@ if st.button("Fetch Data"):
         df = pd.json_normalize(data["items"])
 
         st.subheader("All Items Normalized")
-        st.dataframe(df)  # Interactive table with sorting and filtering
+        st.dataframe(df.head(conn_show))  # Interactive table with sorting and filtering
 
         # Count items by type.name
         if "type.name" in df.columns:
@@ -103,6 +104,7 @@ if st.button("Fetch Data"):
 'x-api-key selected: #', conn_api_key, '#'
 'Workspace_id selected: #', conn_workspace_id, '#'
 'Take selected: #', conn_take, '#'
+'Show selected: #', conn_show, '#'
 'Swagger_url used: #', swagger_url, '#'
 
 # Add Dropdown to select an endpoint from the list found
