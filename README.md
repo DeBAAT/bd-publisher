@@ -15,5 +15,5 @@ A simple Streamlit app showing information contained in the BlueDolphin reposito
 2. Run the app
 
    ```
-   $ streamlit run streamlit_app.py
+   $ streamlit run bd_publisher_app.py
    ```
