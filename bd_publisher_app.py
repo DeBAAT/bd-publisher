@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import requests
+import logging
 
 st.title("🔍 Swagger GET Endpoint Explorer")
 
