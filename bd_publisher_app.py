@@ -21,6 +21,46 @@ def get_auth_headers(api_key, tenant):
         "Content-Type": "application/json"
     }
 
+# Show the label and value of a data element
+def show_label_element(data, element_label, element_key):
+    """
+    Display a header and the element title from the data dictionary.
+
+    Parameters:
+    - data: dict, the data containing the element information
+    - element_label: str, the header to display
+    - element_key: str, the key to use for retrieving the element from data
+    """
+    try:
+        element_value = data.get(element_key, "Unknown Title")
+        st.write(f"### {element_label}: {element_value}")
+    except Exception as e:
+        import logging
+        logging.error(f"Error displaying element with key '{element_key}': {e}")
+        st.error("Failed to display element_label.")
+
+# Show table with information of related objects
+def show_related_objects(data):
+    try:
+        related_objects = data.get("related_objects", [])
+        if related_objects:
+            st.write("### Related Objects")
+            table_data = [
+                {
+                    "Relationship": obj.get("relationship", {}).get("name", "N/A"),
+                    "Type Name": obj.get("type", {}).get("name", "N/A"),
+                    "Object Title": obj.get("object_title", "N/A"),
+                    "Object ID": obj.get("object_id", "N/A"),
+                    "Relationship ID": obj.get("relationship_id", "N/A")
+                }
+                for obj in related_objects
+            ]
+            st.table(table_data)
+        else:
+            st.info("No related objects found.")
+    except Exception as e:
+        logging.error(f"Error displaying related objects: {e}")
+        st.error("Failed to display related objects.")
 
 # Step 1: Upload Swagger JSON file
 uploaded_file = st.file_uploader("Upload Swagger JSON", type="json")
@@ -93,52 +133,24 @@ if uploaded_file is not None:
                 if value != "":
                     query_params[name] = value
 
-        # Build headers
-        # headers = {}
-        # for param in parameters:
-            # if param.get("in") == "header":
-                # name = param.get("name")
-                # value = user_inputs.get(name)
-                # if value != "":
-                    # headers[name] = value
-
         try:
             # Use Headers in Every API Call
             headers = get_auth_headers(api_key, tenant)
             response = requests.get(url, headers=headers, params=query_params)
             response.raise_for_status()
-            # st.subheader("Response")
-            # st.json(response.json())
 
             # Step 7: Show the Related Objects when button is pressed
             data = response.json()
 
             # Show the object_title of the main object
-            object_title = data.get("object_title", "Unknown Title")
-            st.write(f"### Object Title: {object_title}")
+            show_label_element(data, "Object Title", "object_title")
 
             # Show full JSON response in a collapsible section
             with st.expander("Show Full JSON Response"):
                 st.json(data)
 
             # Show related objects if available
-            related_objects = data.get("related_objects", [])
-
-            if related_objects:
-                st.write("### Related Objects")
-                table_data = [
-                    {
-                        "Relationship": obj.get("relationship", {}).get("name", "N/A"),
-                        "Type Name": obj.get("type", {}).get("name", "N/A"),
-                        "Object Title": obj.get("object_title", "N/A"),
-                        "Object ID": obj.get("object_id", "N/A"),
-                        "Relationship ID": obj.get("relationship_id", "N/A")
-                    }
-                    for obj in related_objects
-                ]
-                st.table(table_data)
-            else:
-                st.info("No related objects found.")
+            show_related_objects(data)
 
         except Exception as e:
             st.error(f"API call failed: {e}")
