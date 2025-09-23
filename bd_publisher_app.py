@@ -107,8 +107,39 @@ if uploaded_file is not None:
             headers = get_auth_headers(api_key, tenant)
             response = requests.get(url, headers=headers, params=query_params)
             response.raise_for_status()
-            st.subheader("Response")
-            st.json(response.json())
+            # st.subheader("Response")
+            # st.json(response.json())
+
+            # Step 7: Show the Related Objects when button is pressed
+            data = response.json()
+
+            # Show the object_title of the main object
+            object_title = data.get("object_title", "Unknown Title")
+            st.write(f"### Object Title: {object_title}")
+
+            # Show full JSON response in a collapsible section
+            with st.expander("Show Full JSON Response"):
+                st.json(data)
+
+            # Show related objects if available
+            related_objects = data.get("related_objects", [])
+
+            if related_objects:
+                st.write("### Related Objects")
+                table_data = [
+                    {
+                        "Relationship": obj.get("relationship", {}).get("name", "N/A"),
+                        "Type Name": obj.get("type", {}).get("name", "N/A"),
+                        "Object Title": obj.get("object_title", "N/A"),
+                        "Object ID": obj.get("object_id", "N/A"),
+                        "Relationship ID": obj.get("relationship_id", "N/A")
+                    }
+                    for obj in related_objects
+                ]
+                st.table(table_data)
+            else:
+                st.info("No related objects found.")
+
         except Exception as e:
             st.error(f"API call failed: {e}")
 
