@@ -13,7 +13,7 @@ tenant = st.sidebar.text_input("Tenant")
 # Function to construct OData Headers using api_key
 def get_auth_headers(api_key):
     return {
-        "Authorization": api_key,
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
 
@@ -73,25 +73,30 @@ def show_related_objects(data):
 
 # Create headers and odata_url
 headers = get_auth_headers(api_key)
-odata_url = get_odata_url(tenant,"objects")
+odata_url = get_odata_url(tenant,"Objects")
 
 # Get the response from the odata_url
 try:
-    response = requests.get(odata_url, headers=headers)
-    response.raise_for_status()
-    data = response.json()
 
-    # Show the object_title of the main object
-    show_label_element(data, "Object Title", "object_title")
+    # Call the endpoint when button is pressed
+    if st.button("Call Endpoint"):
+        # response = requests.get(odata_url, headers=headers)
+        response = requests.get(odata_url, auth=(tenant, api_key))
+        response.raise_for_status()
+        data = response.json()
 
-    # Show full JSON response in a collapsible section
-    with st.expander("Show Full JSON Response"):
-        st.json(data)
+        # Show the object_title of the main object
+        show_label_element(data, "Object Title", "object_title")
+
+        # Show full JSON response in a collapsible section
+        with st.expander("Show Full JSON Response"):
+            st.json(data)
 
 except Exception as e:
     st.error(f"API call failed: {e}")
 
 'Tenant selected: #', tenant, '#'
 'odata_url created: #', odata_url, '#'
+'headers created: #', headers, '#'
 # 'Workspace_id selected: #', workspace_id, '#'
 
