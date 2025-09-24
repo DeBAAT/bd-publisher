@@ -56,28 +56,26 @@ def show_label_element(data, element_label, element_key):
         logging.error(f"Error displaying element with key '{element_key}': {e}")
         st.error("Failed to display element_label.")
 
-# Show table with information of related objects
-def show_related_objects(data):
+# Show table for all objects found, showing Title and ID
+def show_objects_table(data):
     try:
-        related_objects = data.get("related_objects", [])
-        if related_objects:
-            st.write("### Related Objects")
+        # OData responses usually have a 'value' key containing the list of objects
+        objects = data.get("value", [])
+        if objects:
+            st.write("### Objects Found")
             table_data = [
                 {
-                    "Relationship": obj.get("relationship", {}).get("name", "N/A"),
-                    "Type Name": obj.get("type", {}).get("name", "N/A"),
-                    "Object Title": obj.get("object_title", "N/A"),
-                    "Object ID": obj.get("object_id", "N/A"),
-                    "Relationship ID": obj.get("relationship_id", "N/A")
+                    "Title": obj.get("Title", obj.get("Name", "N/A")),
+                    "ID": obj.get("ID", obj.get("Id", "N/A"))
                 }
-                for obj in related_objects
+                for obj in objects
             ]
             st.table(table_data)
         else:
-            st.info("No related objects found.")
+            st.info("No objects found.")
     except Exception as e:
-        logging.error(f"Error displaying related objects: {e}")
-        st.error("Failed to display related objects.")
+        logging.error(f"Error displaying objects table: {e}")
+        st.error("Failed to display objects table.")
 
 # Create headers and odata_url
 headers = get_auth_headers(api_key)
@@ -105,11 +103,13 @@ try:
         with st.expander("Show Full JSON Response"):
             st.json(data)
 
+        # Show table for all objects found (Title and ID)
+        show_objects_table(data)
+
 except Exception as e:
     st.error(f"API call failed: {e}")
 
 'Tenant selected: #', tenant, '#'
 'odata_url created: #', odata_url, '#'
-'headers created: #', headers, '#'
 # 'Workspace_id selected: #', workspace_id, '#'
 
