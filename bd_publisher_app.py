@@ -3,7 +3,7 @@ import json
 import requests
 import logging
 
-st.title("🔍 Swagger GET Endpoint Explorer")
+st.title("🔍 OData GET Endpoint Explorer")
 
 # Collect Authentication Inputs Once in the sidebar
 st.sidebar.header("🔐 Authentication")
