@@ -10,6 +10,14 @@ st.sidebar.header("🔐 Authentication")
 api_key = st.sidebar.text_input("Authorization", type="password")
 tenant = st.sidebar.text_input("Tenant")
 
+# Add sidebar inputs for OData parameters
+top = st.sidebar.number_input("Top", min_value=1, value=st.session_state.get("top", 10))
+filter = st.sidebar.text_input("Filter", value=st.session_state.get("filter", ""), help="Enter OData filter string in single quotes, e.g. 'Name eq \'Test\''")
+
+# Store param values in session_state
+st.session_state["top"] = top
+st.session_state["filter"] = filter
+
 # Function to construct OData Headers using api_key
 def get_auth_headers(api_key):
     return {
@@ -73,7 +81,12 @@ def show_related_objects(data):
 
 # Create headers and odata_url
 headers = get_auth_headers(api_key)
-odata_url = get_odata_url(tenant,"Objects")
+odata_url = get_odata_url(tenant, "Objects")
+
+# Build OData query parameters
+params = {"$top": top}
+if filter:
+    params["$filter"] = filter
 
 # Get the response from the odata_url
 try:
@@ -81,7 +94,7 @@ try:
     # Call the endpoint when button is pressed
     if st.button("Call Endpoint"):
         # response = requests.get(odata_url, headers=headers)
-        response = requests.get(odata_url, auth=(tenant, api_key))
+        response = requests.get(odata_url, auth=(tenant, api_key), params=params)
         response.raise_for_status()
         data = response.json()
 
