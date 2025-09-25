@@ -1,115 +1,21 @@
 import streamlit as st
-import json
-import requests
-import logging
 
-st.title("🔍 OData Endpoint Explorer")
+st.title("Run OData or Swagger")
+st.write(st.__version__)
 
-# Collect Authentication Inputs Once in the sidebar
-st.sidebar.header("🔐 Authentication")
-api_key = st.sidebar.text_input("Authorization", type="password")
-tenant = st.sidebar.text_input("Tenant")
+# Track the selected file in session state
+if "selected_file" not in st.session_state:
+    st.session_state.selected_file = "bd_publisher_odata.py"
 
-# Add sidebar inputs for OData parameters
-top = st.sidebar.number_input("Top", min_value=1, value=st.session_state.get("top", 10))
-filter = st.sidebar.text_input("Filter", value=st.session_state.get("filter", ""), help="Enter OData filter string in single quotes, e.g. 'Name eq \'Test\''")
+selected = st.radio("Select file to run:", ["bd_publisher_odata.py", "bd_publisher_swagger.py"], index=["bd_publisher_odata.py", "bd_publisher_swagger.py"].index(st.session_state.selected_file))
 
-# Store param values in session_state
-st.session_state["top"] = top
-st.session_state["filter"] = filter
+if selected != st.session_state.selected_file:
+    st.session_state.selected_file = selected
+    st.experimental_rerun()
 
-# Function to construct OData Headers using api_key
-def get_auth_headers(api_key):
-    return {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
+st.write(f"Currently running: {st.session_state.selected_file}")
 
-# Function to construct OData URL using tenant
-def get_odata_url(tenant, path=""):
-    """
-    Construct the OData URL using the tenant parameter.
-    Default path is ''.
-    """
-    base_url = f"https://{tenant}.odata.bluedolphin.app/"
-    return f"{base_url}{path}"
-
-# Initialize Session State for params
-if "params" not in st.session_state:
-    st.session_state.params = {}
-
-# Show the label and value of a data element
-def show_label_element(data, element_label, element_key):
-    """
-    Display a header and the element title from the data dictionary.
-
-    Parameters:
-    - data: dict, the data containing the element information
-    - element_label: str, the header to display
-    - element_key: str, the key to use for retrieving the element from data
-    """
-    try:
-        element_value = data.get(element_key, "Unknown Title")
-        st.write(f"### {element_label}: {element_value}")
-    except Exception as e:
-        import logging
-        logging.error(f"Error displaying element with key '{element_key}': {e}")
-        st.error("Failed to display element_label.")
-
-# Show table for all objects found, showing Title and ID
-def show_objects_table(data):
-    try:
-        # OData responses usually have a 'value' key containing the list of objects
-        objects = data.get("value", [])
-        if objects:
-            st.write("### Objects Found")
-            table_data = [
-                {
-                    "Title": obj.get("Title", obj.get("Name", "N/A")),
-                    "ID": obj.get("ID", obj.get("Id", "N/A"))
-                }
-                for obj in objects
-            ]
-            st.table(table_data)
-        else:
-            st.info("No objects found.")
-    except Exception as e:
-        logging.error(f"Error displaying objects table: {e}")
-        st.error("Failed to display objects table.")
-
-# Create headers and odata_url
-headers = get_auth_headers(api_key)
-odata_url = get_odata_url(tenant, "Objects")
-
-# Build OData query parameters
-params = {"$top": top}
-if filter:
-    params["$filter"] = filter
-
-# Get the response from the odata_url
-try:
-
-    # Call the endpoint when button is pressed
-    if st.button("Call Endpoint"):
-        # response = requests.get(odata_url, headers=headers)
-        response = requests.get(odata_url, auth=(tenant, api_key), params=params)
-        response.raise_for_status()
-        data = response.json()
-
-        # Show the object_title of the main object
-        show_label_element(data, "Object Title", "object_title")
-
-        # Show full JSON response in a collapsible section
-        with st.expander("Show Full JSON Response"):
-            st.json(data)
-
-        # Show table for all objects found (Title and ID)
-        show_objects_table(data)
-
-except Exception as e:
-    st.error(f"API call failed: {e}")
-
-'Tenant selected: #', tenant, '#'
-'odata_url created: #', odata_url, '#'
-# 'Workspace_id selected: #', workspace_id, '#'
-
+if st.session_state.selected_file == "bd_publisher_odata.py":
+    import bd_publisher_odata
+elif st.session_state.selected_file == "bd_publisher_swagger.py":
+    import bd_publisher_swagger
